@@ -1,4 +1,7 @@
+[web_servers]
 ubuntu@3.142.114.41
 ubuntu@18.116.241.187
+
+[db_servers]
 ubuntu@3.16.25.14
 ec2-user@18.216.222.172
