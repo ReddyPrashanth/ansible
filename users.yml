@@ -1,0 +1,39 @@
+---
+
+- hosts: all
+  become: true
+  pre_tasks:
+ 
+   - name: install updates (Amazon)
+     tags: always
+     yum:
+       update_only: yes
+       update_cache: yes
+     when: ansible_distribution == "Amazon"
+
+- hosts: all
+  become: true
+  tasks:
+
+  - name: Add user simone 
+    tags: users,amazon
+    user:
+      name: simone
+      groups: adm
+      password: "{{simone_password | password_hash('sha512')}}"
+      append: yes
+
+  - name: Add ssh key for simone 
+    tags: always
+    authorized_key:
+      user: simone
+      key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIH2plsmW2Y5Wr7uqqPgRXPTxbuK1fnxYz57A+JhChUQ ansible"
+
+  - name : Add simone as a sudoer
+    tags: always
+    copy:
+      src: sudoer_simone
+      dest: /etc/sudoers.d/simone
+      owner: root
+      group: root
+      mode: 0440
