@@ -1,0 +1,29 @@
+---
+
+- hosts: web_servers
+  become: true
+  tasks:
+
+
+  - name: Upadte packages on Amazon linux
+    tags: always
+    yum:
+      update_cache: yes
+    when: ansible_distribution == "Amazon"
+  
+  - name: Install apache package on Amazon
+    tags: apache,httpd,amazon
+    yum:
+      name: 
+      - httpd
+      - php
+      state: latest
+    when: ansible_distribution == "Amazon"
+
+  - name: Start httpd service on Amazon
+    tags: apache,httpd,amazon
+    service:
+      name: httpd
+      state: started
+      enabled: yes
+    when: ansible_distribution == "Amazon"
