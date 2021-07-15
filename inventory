@@ -1,2 +1,2 @@
-[web_servers]
-ec2-user@18.119.28.88
+[react_web_servers]
+ubuntu@3.143.217.152

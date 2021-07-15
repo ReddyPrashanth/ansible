@@ -1,0 +1,66 @@
+---
+
+- hosts: react_web_servers
+  become: true
+  tasks:
+
+  - name: Update packages on (Ubuntu)
+    tags: always
+    apt:
+      update_cache: yes
+    when : ansible_distribution == "Ubuntu"
+
+  - name: Install nodejs install script
+    tags: nodejs,ubuntu
+    shell: |
+      curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+
+  - name: Install apache on (Ubuntu)
+    tags: apache,ubuntu
+    apt:
+      name:
+      - apache2
+      - nodejs
+      state: latest
+    when: ansible_distribution == "Ubuntu"
+
+  - name: Copy ssh key for github
+    tags: github
+    copy:
+      src: /Users/prashanthsreepathi/.ssh/ansible
+      dest: /home/ubuntu/.ssh/id_rsa
+      owner: ubuntu
+      group: ubuntu
+      mode: '0400'
+
+  - name: Copy apache default conf key_file
+    tags: apache
+    copy:
+      src: apache_default.conf
+      dest: /etc/apache2/sites-available/000-default.conf
+      owner: root
+      group: root
+      mode: '0644'
+    register: conf_changed
+
+  - name: Restart apache on conf change
+    tags: apache
+    service:
+      name: apache2
+      state: restarted
+    when: conf_changed.changed
+      
+  - name: Git clone on master branch
+    git:
+      repo: https://github.com/ReddyPrashanth/blank-react-project.git
+      key_file: /home/ubuntu/.ssh/id_rsa
+      dest: /var/www/html/react-app
+    register: git_finished
+
+  - name: NODE | Install npm deps
+    shell: npm i && npm run build
+    when: git_finished.changed
+    args:
+      chdir: /var/www/html/react-app
+
+  
